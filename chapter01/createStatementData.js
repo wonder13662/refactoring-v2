@@ -1,3 +1,10 @@
+class PerformanceCalculator {
+  constructor(aPerformance, aPlay) {
+    this.aPerformance = aPerformance;
+    this.play = aPlay;
+  }
+}
+
 export default function createStatementData(invoice, plays) {
   const result = {};
   result.customer = invoice.customer;
@@ -7,8 +14,9 @@ export default function createStatementData(invoice, plays) {
   return result;
 
   function enrichPerformance(aPerformance) {
-    const result = Object.assign({}, aPerformance); // 얕은 복사 수행
-    result.play = playFor(result);
+    const calculator =  new PerformanceCalculator(aPerformance, playFor(aPerformance));
+    const result = Object.assign({}, aPerformance);
+    result.play = calculator.play;
     result.amount = amountFor(result);
     result.volumeCredits = volumeCreditsFor(result);
     return result;
