@@ -1,4 +1,4 @@
-const createStatementData = require('./createStatementData') ;
+import createStatementData from './createStatementData';
 
 function statement(invoice, plays) {
   return renderPlainText(createStatementData(invoice, plays));
@@ -42,7 +42,7 @@ function usd(aNumber) {
   }).format(aNumber); 
 }
 
-module.exports = {
+export default {
   statement,
   htmlStatement,
 };
