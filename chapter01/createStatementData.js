@@ -1,5 +1,9 @@
 function createPerformaceCalculator(aPerformance, aPlay) {
-  return new PerformanceCalculator(aPerformance, aPlay);
+  switch(aPlay.type) {
+    case "tragedy": return new TragedyCalculator(aPerformance, aPlay);
+    case "comedy": return new ComedyCalculator(aPerformance, aPlay);
+    default: throw new Error(`알 수 없는 장르: ${this.play.type}`);
+  }
 }
 
 class PerformanceCalculator {
@@ -38,6 +42,12 @@ class PerformanceCalculator {
     if ("comedy" === this.play.type) result += Math.floor(this.performance.audience / 5);
     return result;
   }
+}
+
+class TragedyCalculator extends PerformanceCalculator {
+}
+
+class ComedyCalculator extends PerformanceCalculator {
 }
 
 export default function createStatementData(invoice, plays) {
