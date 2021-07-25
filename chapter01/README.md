@@ -182,3 +182,16 @@ $ npm run test
   - 정교한 코드 분석과 리팩터링 기능을 제공. Microsoft에서 만들어 운영, 관리
   - [Visual Studio Code - Language Server Extension Guide](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide)
 - `질문` 언어 서버는 대체 어떻게 쓰는 것일까?
+### 2.11 더 알고 싶다면
+- [리팩터링 워크북(인사이트, 2006)](http://www.yes24.com/Product/Goods/2148566)
+  - 리팩터링 연습에 주력한 책. 리팩터링을 충분히 연습할 수 있도록 다양한 예제를 제공하는 책
+- [패턴을 활용한 리팩터링(인사이트, 2011)](http://www.yes24.com/Product/Goods/14752528)
+  - 소프트웨어 패턴 분야에서 지대한 영향을 준 "디자인 패턴" 책에서 가장 핵심적인 패턴을 골라, 코드를 그 패턴대로 재구성하기 위해 리팩터링하는 방법을 다룸
+- [리팩토링 데이터베이스(위키북스, 2007)](http://www.yes24.com/Product/Goods/2606054)
+- [리팩토링 HTML(에이콘출판사, 2009)](http://www.kyobobook.co.kr/product/detailViewKor.laf?mallGb=KOR&ejkGb=KOR&barcode=9788960771093)
+- [레거시 코드 활용 전략(에이콘 출판사, 2018)](http://www.yes24.com/Product/Goods/64586851)
+  - 테스트 커버리지가 낮은 오래된 코드베이스를 리팩터링하는 방법을 다루고 있다
+- [Refactoring: Ruby Edition(Addition-Wesley, 2009)](https://martinfowler.com/books/refactoringRubyEd.html)
+- 최신 자료
+  - [Refactoring의 Github 지원 페이지](https://github.com/WegraLee/Refactoring)
+  - [리팩터링 웹사이트](https://refactoring.com/)
