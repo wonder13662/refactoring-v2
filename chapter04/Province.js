@@ -48,7 +48,7 @@ export class Province {
   }
 
   get shortfall() {
-    return this._demand - this.totalProduction * 2; // 오류 주입
+    return this._demand - this.totalProduction;
   }
 
   get profit() {
