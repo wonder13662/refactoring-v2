@@ -1098,3 +1098,158 @@ const aReading = new Reading(rawReading);
 - 그런 다음 방금 추출한 함수를 Reading 클래스로 옮긴다([8.1 함수 옮기기]())
 - 파생 데이터 모두를 필요한 시점에 계산되게 만들었으니 저장된 데이터를 갱신하더라도 문제가 생길 일이 없다.
 - 프로그램의 다른 부분에서 데이터를 갱신할 가능성이 있을 때는 클래스로 묶어두면 큰 도움이 된다.
+### 6.10 여러 함수를 변환 함수로 묶기(Combine Functions into Transform)
+``` diff
+-function base(aReading) {...}
+-function taxableCharge(aReading) {...}
++function enrichReading(argReading) {
++ const aReading = _.cloneDeep(argReading);
++ aReading.baseCharge = base(aReading);
++ aReading.taxableCharge = taxableCharge(aReading);
++ return aReading;
++}
+```
+- 같은 정보가 사용되는 곳마다 같은 도출 로직이 반복되기도 한다.
+- 이런 도출 로직을 모아두면 검색과 갱신을 일관된 장소에서 처리할 수 있고, 로직 중복도 막을 수 있다.
+- 이렇게 하기 위한 방법으로 "변환 함수(transform)"을 사용할 수 있다. 변환 함수는 원본 데이터를 입력받아서 필요한 정보를 모두 도출한 뒤, 각각을 출력 데이터의 필드에 넣어 반환한다. 이렇게 해두면 도출 과정을 검토할 일이 생겼을 때 변환 함수만 살펴보면 된다.
+- 이 리팩터링 대신 [6.9 여러 함수를 클래스로 묶기(Combine Functions into Class)]()로 처리해도 된다. 둘 중 어느 것을 적용해도 좋으며, 대체로 소프트웨어에서 이미 반영된 프로그래밍 스타일을 따르는 편이다.
+- [6.9 여러 함수를 클래스로 묶기(Combine Functions into Class)]()와 [6.10 여러 함수를 변환 함수로 묶기(Combine Functions into Transform)]()의 사이에는 중요한 차이가 하나 있다. 원본 데이터가 코드 안에서 갱신될 때는 클래스로 묶는 편이 훨씬 낫다. 변환 함수로 묶으면 가공한 데이터를 새로운 레코드에 저장하므로, 원본 데이터가 수정되면 일관성이 깨질 수 있기 때문이다.
+- 여러 함수를 한데 묶는 이유 중 하나는 도출 로직이 중복되는 것을 피하기 위해서다. 이 로직을 [6.1 함수 추출하기(Extract function)]()하는 것 만으로도 같은 효과를 볼 수 있지만, 데이터 구조와 이를 사용하는 함수가 근처에 있지 않으면 함수를 발견하기 어려울 때가 많다. 변환 함수(또는 클래스)로 묶으면 이런 함수들을 쉽게 찾아 쓸 수 있다.
+#### 절차
+1. 변환할 레코드를 입력받아서 값을 그대로 반환하는 변환함수를 만든다.
+  - 이 작업은 대체로 깊은 복사로 처리해야 한다. 변환 함수가 원본 레코드를 바꾸지 않는지 검사하는 테스트를 마련해두면 도움이 될 때가 많다.
+2. 묶을 함수 중 함수 하나를 골라서 본문 코드를 변환 함수로 옮기고, 처리 결과를 레코드에 새 필드로 기록한다. 그런 다음 클라이언트 코드가 이 필드를 사용하도록 수정한다.
+  - 로직이 복잡하다면 [6.1 함수 추출하기(Extract function)]()부터 한다.
+3. 테스트한다.
+4. 나머지 관련 함수도 위 과정을 따라 처리한다.
+#### 예시
+``` javascript
+reading = { customer: "ivan", quantity: 10, month: 5, year: 2017 };
+// Client 1
+const aReading = acquireReading();
+const baseCharge = baseRate(aReading.month, aReading.year) * aReading.quantity;
+// Client 2
+const aReading = acquireReading();
+const base = (baseRate(aReading.month, aReading.year) * aReading.quantity);
+const taxableCharge = Math.max(0, base - taxThresold(aReading.year));
+// Client 3
+const aReading = acquireReading();
+const basicChargeAmount = calculateBaseCharge(aReading);
+// function calculateBaseCharge
+function calculateBaseCharge(aReading) { // 기본 요금 계산 함수
+  return baseRate(aReading.month, aReading.year) * aReading.quantity;
+}
+```
+- 매달 사용자가 마신 차의 양을 측정(reading)
+- 코드 곳곳에서 다양한 방식으로 차 소비량을 측정한다. 그 중 사용자에게 요금을 부과하기 위해 기본요금을 계산하는 코드도 있다.
+- 세금을 부과할 소비량을 계산하는 코드도 필요하다. 모든 시민이 차 세금을 일부 면제받을 수 있도록 영국 정부가 사려깊게 설계하여 이 값은 기본 소비량보다 적다.
+- 이 코드에는 이와 같은 계산 코드가 여러 곳에 반복된다고 해보자. 중복 코드는 나중에 로직을 수정할 때 골치를 썩인다(장담하건데 반드시 수정할 일이 생긴다). 중복 코드라면 [6.1 함수 추출하기(Extract function)]()로 처리할 수도 있지만, 추출한 함수들이 프로그램 곳곳에 흩어져서 나중에 프로그래머가 그런 함수가 있는지조차 모르게 될 가능성이 있다. 
+- 이를 해결하는 방법으로, 다양한 파생 정보 계산 로직을 모두 하나의 변환 단계로 모을 수 있다.
+##### STEP 1
+``` diff
+// function enrichReading
++function enrichReading(orignal) {
++ const result = _.cloneDeep(orignal);
++ return result;
++}
+```
+- 입력 객체를 그대로 복사해 반환하는 변환함수를 만든다.
+> 본질은 같고 부가 정보만 덧붙이는 변환함수의 이름을 "enrich"라 하고, 형태가 변할 때만 "transform"이라는 이름을 쓴다.
+##### STEP 2
+``` diff
+// Client 3
++const rawReading = acquireReading(); // 미가공 측정값
+-const aReading = acquireReading();
++const aReading = enrichReading(rawReading);
+const basicChargeAmount = calculateBaseCharge(aReading);
+
+// function enrichReading
+function enrichReading(orignal) {
+  const result = _.cloneDeep(orignal);
++ result.baseCharge = calculateBaseCharge(result);  // 미가공 측정값에 기본 소비량을 부가 정보로 덧붙임
+  return result;
+}
+```
+- (2)변경하려는 계산 로직 중 하나를 고른다. 먼저 이 계산 로직에 측정값을 전달하기 전에 부가 정보를 덧붙이도록 수정한다.
+- `calculateBaseCharge()`를 부가 정보를 덧분이는 코드 근처로 옮긴다([8.1 함수 옮기기]())
+##### STEP 3
+``` diff
+// Client 3
+const rawReading = acquireReading();
+const aReading = enrichReading(rawReading);
+-const basicChargeAmount = calculateBaseCharge(aReading);
++const basicChargeAmount = aReading.baseCharge;
+```
+- 이이서 이 함수를 사용하던 클라이언트가 부가 정보를 담은 필드(`aReading.baseCharge`)를 사용하도록 수정한다.
+- `calculateBaseCharge()`를 호출하는 코드를 모두 수정했다면, 이 함수를 `enrichReading()` 안에 중첩시킬 수 있다. 그러면 "기본요금을 이용하는 클라이언트는 변환된 레코드를 사용해야 한다"는 의도를 명확히 표현할 수 있다.
+
+##### STEP 4
+``` diff
+// 테스트 코드
++it('check reading unchanged', function() {
++ const baseReading = { customer: "ivan", quantity: 15, month: 5, year: 2017 };
++ const oracle = _.cloneDeep(baseReading);
++ enrichReading(baseReading);
++ assert.deepEqual(baseReading, oracle);
++})
+
+// Client 1
+-const aReading = acquireReading();
++const rawReading = acquireReading();
++const aReading = enrichReading(rawReading);
+-const baseCharge = baseRate(aReading.month, aReading.year) * aReading.quantity;
++const baseCharge = aReading.baseCharge;
+```
+- 여기서 주의할 점이 있다. `enrichReading()`처럼 정보를 추가해 반환할 때 원본 측정값 레코드는 변경하지 않아야 한다는 것이다. 따라서 이를 확인하는 테스트를 작성해 두는 것이 좋다.
+- Client 1도 이 필드(`aReading.baseCharge`)를 사용하도록 수정한다.
+##### STEP 5
+``` diff
+// Client 2
+-const aReading = acquireReading();
++const rawReading = acquireReading();
++const aReading = enrichReading(rawReading);
+const base = (baseRate(aReading.month, aReading.year) * aReading.quantity);
+const taxableCharge = Math.max(0, base - taxThresold(aReading.year));
+```
+- 이제 Client 2의 세금을 부과할 소비량 계산으로 넘어가자. 가장 먼저 변환 함수부터 끼워 넣는다.
+##### STEP 6
+``` diff
+// Client 2
+const rawReading = acquireReading();
+const aReading = enrichReading(rawReading);
+-const base = (baseRate(aReading.month, aReading.year) * aReading.quantity);
++const base = aReading.baseCharge;
+const taxableCharge = Math.max(0, base - taxThresold(aReading.year));
+```
+- 여기서 기본요금을 계산하는 부분을 앞에서 새로 만든 필드로 교체할 수 있다.
+##### STEP 7
+``` diff
+// Client 2
+const rawReading = acquireReading();
+const aReading = enrichReading(rawReading);
+-const base = aReading.baseCharge;
+-const taxableCharge = Math.max(0, base - taxThresold(aReading.year));
++const taxableCharge = Math.max(0, aReading.baseCharge - taxThresold(aReading.year));
+```
+- 테스트해서 문제가 없다면 `base` 변수를 [6.4 변수 인라인하기(Inline Variable)]()한다.
+##### STEP 8
+``` diff
+// function enrichReading
+function enrichReading(orignal) {
+  const result = _.cloneDeep(orignal);
+  result.baseCharge = calculateBaseCharge(result);  // 미가공 측정값에 기본 소비량을 부가 정보로 덧붙임
++ result.taxableCharge = Math.max(0, result.baseCharge - taxThreshold(result.year));
+  return result;
+}
+```
+- 그런 다음 `taxableCharge`의 계산 코드를 변환함수로 옮긴다.
+##### STEP 9
+``` diff
+// Client 2
+const rawReading = acquireReading();
+const aReading = enrichReading(rawReading);
+-const taxableCharge = Math.max(0, aReading.baseCharge - taxThresold(aReading.year));
++const taxableCharge = aReading.taxableCharge;
+```
+- 이제 새로 만든 필드를 사용하도록 원본 코드를 수정한다.
+- 테스트에 성공하면 `taxableCharge` 변수를 [6.4 변수 인라인하기(Inline Variable)]()한다.
