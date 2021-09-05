@@ -627,3 +627,103 @@ function xxNewEngland(stateCode) {
 +const newEnglanders = someCustomers.filter(c => inNewEngland(aCustomer.address.state));
 ```
 - 기존 함수를 모든 호출문에 인라인했다면, (6)함수 선언 바꾸기를 다시 한번 적용하여 새 함수의 이름을 기존 함수의 이름으로 바꾼다.
+
+### 6.6 변수 캡슐화하기(Encapsulate Variable)
+``` diff
+-let defaultOwner = { firstName: "마틴", lastName: "파울러" };
++let defaultOwnerData = { firstName: "마틴", lastName: "파울러" };
++export function defaultOwner() { return defaultOwnerData; }
++export function setDefaultOwner(arg) { defaultOwnerData = arg; }
+```
+#### 배경
+- 데이터는 함수보다 다루기 까다롭다. 데이터를 참조하는 모든 부분을 한 번에 바꿔야 코드가 제대로 작동한다. 짧은 함수 안의 임시 변수처럼 유효범위가 아주 좁은 데이터는 어려울 게 없지만, 유효범위가 넓어질수록 다루기 어려워진다. 전역 데이터가 골칫거리인 이유도 바로 여기에 있다.
+- 그래서 접근할 수 있는 범위가 넓은 데이터를 옮길 때는 먼저 그 데이터로의 접근을 독점하는 함수를 만드는 식으로 캡슐화하는 것이 가장 좋은 방법일 때가 많다. 데이터 재구성이라는 어려운 작업을 함수 재구성이라는 더 단순한 작업으로 바꾸는 것이다.
+- 데이터 캡슐화는 다른 경우에도 도움을 준다. 데이터를 변경하고 사용하는 코드를 감시할 수 있는 확실한 통로가 되어주기 때문에 데이터 변경 전 검증이나 변경 후 추가 로직을 쉽게 끼워 넣을 수 있다. 필자는 유효범위가 함수 하나보다 넓은 가변 데이터는 모두 이런 식으로 캡슐화해서 그 함수를 통해서만 접근하게 만드는 습관이 있다. 데이터의 유효범위가 넓을 수록 캡슐화해야 한다.레거시 코드를 다룰 때는 이런 변수를 참조하는 코드를 추가하거나 변경할 때마다 최대한 캡슐화한다. 그래야 자주 사용하는 데이터에 대한 결합도가 높아지는 일을 막을 수 있다.
+- 불변 데이터는 가변 데이터보다 캡슐화할 이유가 적다. 데이터가 변경될 일이 없어서 갱신 전 검증 같은 추가 로직이 자리할 공간을 마련할 필요가 없기 때문이다. 불변성은 강력한 방부제인 셈이다.
+#### 절차
+1. 변수로의 접근과 갱신을 전담하는 캡슐화 함수들을 만든다.
+2. 정적 검사를 수행한다.
+3. 변수를 직접 참조하던 부분을 모두 적절한 캡슐화 함수 호출로 바꾼다. 하나씩 바꿀 때마다 테스트한다.
+4. 변수의 접근 범위를 제한한다. 
+  - 변수로의 직접 접근을 막을 수 없을 때도 있다. 그럴 때는 변수 이름을 바꿔서 테스트해보면 해당 변수를 참조하는 곳을 쉽게 찾아낼 수 있다.
+5. 테스트한다.
+6. 변수 값이 레코드라면 [7.1 레코드 캡슐화하기]()를 적용할지 고려해본다.
+#### 예시
+``` javascript
+// 전역 변수에 중요한 데이터가 있는 경우
+let defaultOwner = { firstName: "마틴", lastName: "파울러" };
+// 데이터를 참조하는 코드
+spaceship.owner = defaultOwner;
+// 데이터를 갱신하는 코드
+defaultOwner = { firstName: "레베카", lastName: "파슨스" };
+```
+##### STEP 1
+``` diff
++function getDefaultOwner() { return defaultOwner; }
++function setDefaultOwner(arg) { defaultOwner = arg; }
+```
+- (1)기본적인 캡슐화를 위해 가장 먼저 데이터를 읽고 쓰는 함수부터 정의한다.
+
+##### STEP 2
+``` diff
+// 데이터를 참조하는 코드
+-spaceship.owner = defaultOwner;
++spaceship.owner = getDefaultOwner();
+// 데이터를 갱신하는 코드
+-defaultOwner = { firstName: "레베카", lastName: "파슨스" };
++setDefaultOwner({ firstName: "레베카", lastName: "파슨스" });
+```
+- (2)그런 다음 defaultOwner를 참조하는 코드를 찾아서 방금 만든 getter 함수를 호출하도록 고친다.
+- 대입문은 setter 함수로 바꾼다.
+- 하나씩 바꿀 때마다 테스트한다.
+
+##### STEP 3
+``` diff
+// defaultOwner.js 파일
++let defaultOwner = { firstName: "마틴", lastName: "파울러" };
++export function getDefaultOwner() { return defaultOwner; }
++export function setDefaultOwner(arg) { defaultOwner = arg; }
+```
+- (4)모든 참조를 수정했다면 이제 변수의 가시 범위를 제한한다. 그러면 미처 발견하지 못한 참조가 없는지 확인할 수 있고, 나중에 수정하는 코드에서도 이 변수에 직접 접근하지 못하게 만들 수 있다. 자바스크립트로 작성할 때는 변수와 접근자 메서드를 같은 파일로 옮기고 접근자만 노출(export) 시키면 된다.
+- 변수로의 접근을 제한할 수 없을 때는 변수 이름을 바꿔서 다시 테스트해보면 좋다. 이렇게 한다고 해서 나중에 직접 접근하지 못하게 막을 수 있는 건 아니지만, `__privateOnly_defaultOwner`처럼 공개용이 아니라는 의미를 담으면서도 눈에 띄는 이름으로 바꾸면 조금이나마 도움이 된다.
+
+#### 값 캡슐화하기
+``` javascript
+const owner1 = defaultOwner();
+assert.equal("파울러", owner1.lastName, "처음 값 확인");
+const owner2 = defaultOwner();
+owner2.lastName = "파슨스";
+assert.equal("파슨스", owner1.lastName, "owner2를 변경한 후"); // 성공할까?
+```
+- 변수에 담긴 내용을 행위까지 제어할 수 있게 캡슐화하고 싶을 때도 많다.
+##### 첫번째 방법
+``` diff
+// defaultOwner.js
+let defaultOwner = { firstName: "마틴", lastName: "파울러" };
+-export function getDefaultOwner() { return defaultOwner; }
++export function getDefaultOwner() { return Object.assign({}, defaultOwner); }
+export function setDefaultOwner(arg) { defaultOwner = arg; }
+```
+- getter가 데이터의 복제본을 돌려주는 방식으로 처리. 리스트에 이 기법을 많이 적용한다. 데이터의 복제본을 돌려주면 클라이언트는 getter로 얻은 데이터를 변경할 수 있지만 원본에는 아무런 영향을 주지 못한다. 
+##### 두번째 방법
+``` diff
+// defaultOwner.js
+let defaultOwner = { firstName: "마틴", lastName: "파울러" };
+-function getDefaultOwner() { return defaultOwner; }
++function getDefaultOwner() { return new Person(defaultOwner); }
+function setDefaultOwner(arg) { defaultOwner = arg; }
+
++class Person {
++ constructor(data) {
++   this._lastName = data.lastName;
++   this._firstName = data.firstName;
++ }
++ get lastName() { return this._lastName; }
++ get firstName() { return this._firstName; }
++ // 다른 속성도 이런 식으로 처리한다.
++}
+```
+- 아예 변경할 수 없게 만들려면, [7.1 레코드 캡슐화하기]()를 사용한다
+- 이렇게 하면 defaultOwnerData의 속성을 다시 대입하는 연산은 모두 무시된다.
+- 이처럼 변경을 감지하여 막는 기법을 임시로 활용해보면 도움될 때가 많다. 변경하는 부분을 없앨 수도 있고, 적절한 변경 함수를 제공할 수도 있다. 적절히 다 처리하고 난 뒤 게터가 복제본을 반환하도록 수정하면 된다.
+- setter에서도 복제본을 만드는 편이 좋을 수 있다. 정확한 기준은 그 데이터가 어디서 오는지, 원본 데이터의 모든 변경을 그대로 반영할 수 있도록 원본으로의 링크를 유지해야 하는지에 따라 다르다. 링크가 필요없다면 데이터를 복제해 저장하여 나중에 원본이 변경돼서 발생하는 사고를 방지할 수 있다. 복제본 만들기가 번거로울 때가 많지만, 이런 복제가 성능에 주는 영향은 대체로 미미하다. 반면, 원본을 그대로 사용하면 나중에 디버깅하기 어렵고 시간도 오래 걸릴 위험이 있다.
