@@ -727,3 +727,67 @@ function setDefaultOwner(arg) { defaultOwner = arg; }
 - 이렇게 하면 defaultOwnerData의 속성을 다시 대입하는 연산은 모두 무시된다.
 - 이처럼 변경을 감지하여 막는 기법을 임시로 활용해보면 도움될 때가 많다. 변경하는 부분을 없앨 수도 있고, 적절한 변경 함수를 제공할 수도 있다. 적절히 다 처리하고 난 뒤 게터가 복제본을 반환하도록 수정하면 된다.
 - setter에서도 복제본을 만드는 편이 좋을 수 있다. 정확한 기준은 그 데이터가 어디서 오는지, 원본 데이터의 모든 변경을 그대로 반영할 수 있도록 원본으로의 링크를 유지해야 하는지에 따라 다르다. 링크가 필요없다면 데이터를 복제해 저장하여 나중에 원본이 변경돼서 발생하는 사고를 방지할 수 있다. 복제본 만들기가 번거로울 때가 많지만, 이런 복제가 성능에 주는 영향은 대체로 미미하다. 반면, 원본을 그대로 사용하면 나중에 디버깅하기 어렵고 시간도 오래 걸릴 위험이 있다.
+
+### 6.7 변수 이름 바꾸기(Rename Variable)
+```diff
+-let a = height * width;
++let area = height * width;
+```
+- 함수 호출 한 번으로 끝나지 않고 값이 영속되는 필드라면 이름에 더 신경을 써야한다. 필자가 가장 신중하게 이름 짓는 대상이 바로 이런 필드들이다.
+#### 절차
+1. 폭넓게 쓰이는 변수라면 [6.6 변수 캡슐화하기(Encapsulate Variable)]()를 고려한다.
+2. 이름을 바꿀 변수를 참조하는 곳을 모두 찾아서, 하나씩 변경한다.
+  - 다른 코드베이스에서 참조하는 변수는 외부에 공개된 변수이므로 이 리팩토링을 적용할 수 없다
+  - 변수 값이 변하지 않는다면 다른 이름으로 복제본을 만들어서 하나씩 점진적으로 변경한다. 하나씩 바꿀 때마다 테스트한다.
+3. 테스트한다.
+#### 예시
+``` javascript
+let tpHd = "untitled";
+// 변수를 읽기만 하는 참조
+result += `<h1>${tpHd}</h1>`;
+// 값을 수정
+tpHd = obj['articleTitle'];
+```
+##### STEP 1
+``` diff
+let tpHd = "untitled";
+// 변수를 읽기만 하는 참조
+-result += `<h1>${tpHd}</h1>`;
++result += `<h1>${title()}</h1>`;
+// 값을 수정
+-tpHd = obj['articleTitle'];
++setTitle(obj['articleTitle']);
+
+// tpHd 변수의 getter
++function title() { return tpHd; }
+// tpHd 변수의 setter
++function setTitle(arg) { tpHd = arg; }
+```
+- (1)[6.6 변수 캡슐화하기(Encapsulate Variable)]()로 처리함
+##### STEP 2
+``` diff
+-let tpHd = "untitled";
++let _title = "untitled";
+// 변수를 읽기만 하는 참조
+result += `<h1>${title()}</h1>`;
+// 값을 수정
+setTitle(obj['articleTitle']);
+
+// tpHd 변수의 getter
+-function title() { return tpHd; }
++function title() { return _title; }
+// tpHd 변수의 setter
+-function setTitle(arg) { tpHd = arg; }
++function setTitle(arg) { _title = arg; }
+```
+- 캡슐화 이후에는 변수 이름을 바꿔도 된다
+#### 예시: 상수 이름 바꾸기
+``` diff
+-const cpyNm = "애크미 구스베리";
++const copyName = "애크미 구스베리";
++const cpyNm = copyName;
+```
+- (2)상수의 이름은 캡슐화하지 않고도 복제 방식으로 점진적으로 바꿀 수 있다.
+- 먼저 원본의 이름을 바꾼 후, 원본의 원래 이름과 같은 복제본을 만든다.
+- 이제 기존 이름을 참조하는 코드들을 새 이름으로 점진적으로 바꿀 수 있다. 다 바꿨다면, 복제본을 삭제한다.
+- 이 방식은 읽기 전용인 변수에도 적용할 수 있다.
