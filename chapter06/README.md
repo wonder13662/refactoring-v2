@@ -937,3 +937,164 @@ class NumberRange {
 ```
 - 클래스로 만들어두면 관련 동작들을 이 클래스로 옮길 수 있다는 이점이 생긴다.이 예에서는 온도가 허용 범위 안에 있는지 검사하는 메서드를 클래스에 추가할 수 있다. 지금까지 한 작업은 여러 가지 유용한 동작을 갖춘 범위(Range) 클래스를 생성하기 위한 첫 단계다.
 
+### 6.9 여러 함수를 클래스로 묶기(Combine Functions into Class)
+``` diff
+-function base(aReading) {...}
+-function texableCharge(aReading) {...}
+-function calculateBaseCharge(aReading) {...}
++class Reading {
++ base() {...}
++ texableCharge() {...}
++ calculateBaseCharge() {...}
++}
+```
+#### 배경
+- 클래스는 데이터와 함수를 하나의 공유 환경으로 묶은 후, 다른 프로그램 요소와 어우러질 수 있도록 그 중 일부를 외부에 제공한다.
+- 클래스로 묶으면 이 함수들이 공유하는 공통 환경을 더 명확하게 표현할 수 있고, 각 함수에 전달되는 인수를 줄여서 객체 안에서의 함수 호출을 간결하게 만들 수 있다. 또한 이런 객체를 시스템의 다른 부분에 전달하기 위한 참조를 제공할 수 있다.
+- 이 리팩터링은 이미 만들어진 함수들을 재구성할 때는 물론, 새로 만든 클래스와 관련하여 놓친 연산을 찾아서 새 클래스의 메서드로 뽑아내는 데도 좋다.
+#### 절차
+1. 함수들이 공유하는 공통 데이터 레코드를 [7.1 캡슐화]()한다.
+  - 공통 데이터가 레코드 구조로 묶여 있지 않다면 먼저 [6.8 매개변수 객체 만들기(Introduce Parameter Object)]()로 데이터를 하나로 묶는 레코드를 만든다.
+2. 공통 레코드를 사용하는 함수 각각을 새 클래스로 옮긴다([8.1 함수 옮기기]())
+  - 공통 레코드의 멤버는 함수 호출문의 인수 목록에서 제거한다.
+3. 데이터를 조작하는 로직들은 [6.1 함수 추출하기(Extract function)]()로 새 클래스로 옮긴다.
+#### 예시
+``` javascript
+reading = { customer: "ivan", quantity: 10, month: 5, year: 2017 };
+// Client 1
+const aReading = acquireReading();
+const baseCharge = baseRate(aReading.month, aReading.year) * aReading.quantity;
+// Client 2
+const aReading = acquireReading();
+const base = (baseRate(aReading.month, aReading.year) * aReading.quantity);
+const taxableCharge = Math.max(0, base - taxThresold(aReading.year));
+// Client 3
+const aReading = acquireReading();
+const basicChargeAmount = calculateBaseCharge(aReading);
+
+function calculateBaseCharge(aReading) { // 기본 요금 계산 함수
+  return baseRate(aReading.month, aReading.year) * aReading.quantity;
+}
+```
+- 사람들은 매달 차 계량기를 읽어서 측정값(reading)을 위와 같이 기록한다고 치자.
+- 이런 레코드를 처리하는 코드를 훑어보니 이 데이터로 비슷한 연산을 수행하는 부분이 상당히 많았다. 그래서 기본요금을 계산하는 코드를 찾아봤다.
+- 이런 코드를 보면 앞의 두 클라이언트(Client 1,2)도 이 함수를 사용하도록 고칠 것이다. 하지만 이렇게 최상위 함수로 두면 못보고 지나치기 쉽다는 문제가 있다. 이런 함수를 데이터 처리 코드 가까이 두어야 한다. 그러기 위한 좋은 방법으로, 데이터를 클래스로 만들 수 있다.
+##### STEP 1
+``` diff
++class Reading {
++ constructor() {
++   this._customer = data.customer;
++   this._quantity = data.quantity;
++   this._month = data.month;
++   this._year = data.year;
++ }
++ get customer() { return this._customer; }
++ get quantity() { return this._quantity; }
++ get month() { return this._month; }
++ get year() { return this._year; }
++}
+```
+- (1)레코드를 클래스로 바꾸기 위해 [7.1 레코드를 캡슐화]()한다.
+##### STEP 2
+``` diff
+// Client 3
+-const aReading = acquireReading();
++const rawReading = acquireReading();
++const aReading = new Reading(rawReading);
+const basicChargeAmount = calculateBaseCharge(aReading);
+```
+- (2)이미 만들어져 있는 `calculateBaseCharge()`부터 옮기자. 새 클래스를 사용하려면 데이터를 얻자마자 객체로 만들어야 한다.
+##### STEP 3
+``` diff
+// Reading Class
+class Reading {
+  constructor() {
+    this._customer = data.customer;
+    this._quantity = data.quantity;
+    this._month = data.month;
+    this._year = data.year;
+  }
+  get customer() { return this._customer; }
+  get quantity() { return this._quantity; }
+  get month() { return this._month; }
+  get year() { return this._year; }
++ get calculateBaseCharge() {
++   return baseRate(this.month, this.year) * this.quantity;
++ }  
+}
+
+// Client 3
+const rawReading = acquireReading();
+const aReading = new Reading(rawReading);
+-const basicChargeAmount = calculateBaseCharge(aReading);
++const basicChargeAmount = aReading.calculateBaseCharge;
+```
+- 그런 다음 `calculateBaseCharge()`를 새로 만든 클래스로 옮긴다([8.1 함수 옮기기]())
+##### STEP 4
+``` diff
+// Reading Class
+class Reading {
+  ...
+- get calculateBaseCharge() {
++ get baseCharge() {  
+    return baseRate(this.month, this.year) * this.quantity;
+  }
+}
+
+// Client 3
+const rawReading = acquireReading();
+const aReading = new Reading(rawReading);
+-const basicChargeAmount = aReading.calculateBaseCharge;
++const basicChargeAmount = aReading.baseCharge;
+```
+- 이 과정에서 메서드 이름을 원하는 대로 바꾼다([6.5 함수 선언 바꾸기(Change Function Declaration)]())
+- 이렇게 이름을 바꾸고 나면 Reading 클래스의 클라이언트는 baseCharge가 필드인지, 계산된 값(함수 호출)인지 구분할 수 없다. 이는 [단일 접근 원칙(Uniform Access Principle)](https://martinfowler.com/bliki/UniformAccessPrinciple.html)을 따르므로 권장하는 방식이다.
+##### STEP 5
+``` diff
+// Client 1
+-const aReading = acquireReading();
++const rawReading = acquireReading();
++const aReading = new Reading(rawReading);
+-const baseCharge = baseRate(aReading.month, aReading.year) * aReading.quantity;
++const baseCharge = aReading.baseCharge;
+
+// Client 2
+-const aReading = acquireReading();
++const rawReading = acquireReading();
++const aReading = new Reading(rawReading);
+-const base = (baseRate(aReading.month, aReading.year) * aReading.quantity);
+-const taxableCharge = Math.max(0, base - taxThresold(aReading.year));
++const taxableCharge = Math.max(0, aReading.baseCharge - taxThresold(aReading.year));
+```
+##### STEP 6
+``` diff
++function texableChargeFn(aReading) {
++ return Math.max(0, aReading.baseCharge - taxThreshold(aReading.year));
++}
+
+// Client 3
+const rawReading = acquireReading();
+const aReading = new Reading(rawReading);
+-const basicChargeAmount = aReading.baseCharge;
++const taxableCharge = taxableChargeFn(aReading);
+```
+- (3)이어서 세금을 부과할 소비량을 계산하는 코드를 [6.1 함수 추출하기(Extract function)]()
+##### STEP 7
+``` diff
+// Reading Class
+class Reading {
+  ...
++ get taxableCharge() {  
++   return Math.max(0, this.baseCharge - taxThreshold(this.year));
++ }
+}
+
+// Client 3
+const rawReading = acquireReading();
+const aReading = new Reading(rawReading);
+-const taxableCharge = taxableChargeFn(aReading);
++const taxableCharge = aReading.taxableCharge;
+```
+- 그런 다음 방금 추출한 함수를 Reading 클래스로 옮긴다([8.1 함수 옮기기]())
+- 파생 데이터 모두를 필요한 시점에 계산되게 만들었으니 저장된 데이터를 갱신하더라도 문제가 생길 일이 없다.
+- 프로그램의 다른 부분에서 데이터를 갱신할 가능성이 있을 때는 클래스로 묶어두면 큰 도움이 된다.
