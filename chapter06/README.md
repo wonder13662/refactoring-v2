@@ -1253,3 +1253,838 @@ const aReading = enrichReading(rawReading);
 ```
 - 이제 새로 만든 필드를 사용하도록 원본 코드를 수정한다.
 - 테스트에 성공하면 `taxableCharge` 변수를 [6.4 변수 인라인하기(Inline Variable)]()한다.
+### 6.11 단계 쪼개기(Split Phase)
+``` diff
+-const orderData = orderString.split(/\s+/);
+-const productPrice = priceList(orderData[0].split("-")[1]);
+-const orderPrice = parseInt(orderData[1]) * productPrice;
++const orderRecord = parseOrder(order);
++const orderPrice = price(orderRecord, priceList);
+
++function parseOrder(aString) {
++ const values = aString.split(/\s+/);
++ return ({
++   productID: values[0].split("-")[1],
++   quantity: parseInt(values[1]),
++ });
++}
++function price(order, priceList) {
++ return order.quantity * priceList[order.productID];
++}
+```
+#### 배경
+- 필자는 서로 다른 두 대상을 한꺼번에 다루는 코드를 발견하면 각각을 별개 모듈로 나누는 방법을 모색한다. 코드를 수정해야 할 때 두 대상을 동시에 생각할 필요 없이 하나에만 집중하기 위해서다. 모듈이 잘 분리되어 있다면 다른 모듈의 상세 내용은 전혀 기억하지 못해도 원하는 대로 수정을 끝마칠 수도 있다.
+- 이렇게 분리하는 가장 간편한 방법 하나는 동작을 연이은 두 단계로 쪼개는 것이다. 입력이 처리 로직에 적합하지 않은 형태로 들어오는 경우를 예로 생각해보자. 이럴 때는 본 작업에 들어가기 전에 입력값을 다루기 편한 형태로 가공한다. 아니면 로직을 순차적인 단계들로 분리해도 된다. 이때 각 단계는 서로 확연히 다른 일을 수행해야 한다. 각 단계는 자신만의 문제에 집중하기 때문에 나머지 단계에 관해서는 자세히 몰라도 이해할 수 있다.
+- 다른 단계로 볼 수 있는 코드 영역들이 마침 서로 다른 데이터와 함수를 사용한다면 단계 쪼개기에 적합하다는 뜻이다. 이 코드 영역들을 별도 모듈로 분리하면 그 차이를 코드에서 훨씬 분명하게 드러낼 수 있다.
+#### 절차
+1. 두 번째 단계에 해당하는 코드를 독립 함수로 추출한다.
+2. 테스트한다.
+3. 중간 데이터 구조를 만들어서 앞에서 추출한 함수의 인수로 추가한다.
+4. 테스트한다.
+5. 추출한 두 번째 단계 함수의 매개변수를 하나씩 검토한다. 그 중 첫 번째 단계에서 사용되는 것은 중간 데이터 구조로 옮긴다. 하나씩 옮길 때마다 테스트한다.
+  - 간혹 두 번째 단계에서 사용하면 안되는 매개변수가 있다. 이럴 때는 각 매개변수를 사용한 결과를 중간 데이터 구조의 필드로 추출하고, 이 필드의 값을 설정하는 문장을 호출한 곳으로 옮긴다.
+6. 첫 번째 단계 코드를 [6.1 함수 추출하기(Extract function)]()하면서 중간 데이터 구조를 반환하도록 만든다
+  - 이때 첫 번째 단계를 변환기(transformer) 객체로 추출해도 좋다.
+#### 예시
+```` javascript
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
+  const shippingPerCase = (basePrice > shippingMethod.discountThreshold)?shippingMethod.discountedFee:shippingMethod.feePerCase;
+  const shippingCost = quantity * shippingPerCase;
+  const price = basePrice - discount + shippingCost;
+  return price;
+}
+````
+- 계산이 두 단계로 이뤄짐을 알 수 있다. 앞의 몇 줄은 상품 정보를 이용해서 결제 금액 중 상품 가격을 계산한다. 반면 뒤의 코드는 배송 정보를 이용하여 결제 금액 중 배송비를 계산한다. 나중에 상품 가격과 배송비 계산을 더 복잡하게 만드는 변경이 생긴다면(비교적 서로 독립적으로 처리할 수 있으므로) 이 코드는 두 단계로 나누는 것이 좋다.
+##### STEP 1
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
+- const shippingPerCase = (basePrice > shippingMethod.discountThreshold)?shippingMethod.discountedFee:shippingMethod.feePerCase;
+- const shippingCost = quantity * shippingPerCase;
+- const price = basePrice - discount + shippingCost;
++ const price = applyShipping(basePrice, shippingMethod, quantity, discount);
+  return price;
+}
+
+// Root scope - 두 번째 단계를 처리하는 함수
++function applyShipping(basePrice, shippingMethod, quantity, discount) {
++ const shippingPerCase = (basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
++ const shippingCost = quantity * shippingPerCase;
++ const price = basePrice - discount + shippingCost;
++ return price;
++}
+```
+- 두 번째 단계에 필요한 데이터를 모두 매개변수로 전달했다.
+##### STEP 2
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
++ const priceData = {}; // 중간 데이터 구조
+- const price = applyShipping(basePrice, shippingMethod, quantity, discount);
++ const price = applyShipping(priceData, basePrice, shippingMethod, quantity, discount);
+  return price;
+}
+
+-function applyShipping(basePrice, shippingMethod, quantity, discount) {
++function applyShipping(priceData, basePrice, shippingMethod, quantity, discount) {
+  const shippingPerCase = (basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
+  const shippingCost = quantity * shippingPerCase;
+  const price = basePrice - discount + shippingCost;
+  return price;
+}
+```
+- 다음으로 첫 번째 단계와 두 번째 단계가 주고받을 중간 데이터 구조를 만든다.
+##### STEP 3
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
+- const priceData = {};
++ const priceData = { basePrice: basePrice };
+- const price = applyShipping(priceData, basePrice, shippingMethod, quantity, discount);
++ const price = applyShipping(priceData, shippingMethod, quantity, discount);
+  return price;
+}
+
+-function applyShipping(priceData, basePrice, shippingMethod, quantity, discount) {
++function applyShipping(priceData, shippingMethod, quantity, discount) {  
+- const shippingPerCase = (basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
++ const shippingPerCase = (priceData.basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
+  const shippingCost = quantity * shippingPerCase;
+- const price = basePrice - discount + shippingCost;
++ const price = priceData.basePrice - discount + shippingCost;
+  return price;
+}
+```
+- applyShipping에 전달되는 다양한 매개변수를 살펴보자. 이 중 `basePrice`는 첫 번째 단계를 수행하는 코드에서 생성된다. 따라서 중간 데이터 구조로 옮기고 매개변수 목록에서 제거한다.
+- 다음으로 `shippingMethod`를 보자. 이 매개변수는 첫 번째 단계에서는 사용하지 않으니 그대로 둔다.
+##### STEP 4
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
+- const priceData = { basePrice: basePrice };
++ const priceData = { basePrice: basePrice, quantity: quantity };
+- const price = applyShipping(priceData, shippingMethod, quantity, discount);
++ const price = applyShipping(priceData, shippingMethod, discount);
+  return price;
+}
+
+-function applyShipping(priceData, shippingMethod, quantity, discount) {
++function applyShipping(priceData, shippingMethod, discount) {
+  const shippingPerCase = (priceData.basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
+- const shippingCost = quantity * shippingPerCase;
++ const shippingCost = priceData.quantity * shippingPerCase;
+  const price = priceData.basePrice - discount + shippingCost;
+  return price;
+}
+```
+- 그 다음 나오는 `qunatity`는 첫 번째 단계에서 사용하지만 거기서 생성된 것은 아니다. 그래서 그냥 매개변수로 놔둬도 된다. 하지만 필자는 최대한 중간 데이터 구조에 담는 걸 선호하기 때문에 이 매개변수도 옮긴다.
+##### STEP 5
+- discount도 같은 방법으로 처리한다
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
+- const priceData = { basePrice: basePrice, quantity: quantity };
++ const priceData = { basePrice: basePrice, quantity: quantity, discount: discount };
+- const price = applyShipping(priceData, shippingMethod, discount);
++ const price = applyShipping(priceData, shippingMethod);
+  return price;
+}
+
+-function applyShipping(priceData, shippingMethod, discount) {
++function applyShipping(priceData, shippingMethod) {
+  const shippingPerCase = (priceData.basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
+  const shippingCost = priceData.quantity * shippingPerCase;
+- const price = priceData.basePrice - discount + shippingCost;
++ const price = priceData.basePrice - priceData.discount + shippingCost;
+  return price;
+}
+```
+##### STEP 6
+- 매개변수들을 모두 처리하면 중간 데이터 구조가 완성된다.
+- (6) 이제 첫 번째 단계 코드를 함수로 추출하고 이 데이터 구조를 반환하게 한다.
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+- const basePrice = product.basePrice * quantity;
+- const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
++ const priceData = calculatePricingData(product, quantity);
+  const price = applyShipping(priceData, shippingMethod);
+  return price;
+}
+
++function calculatePricingData(product, quantity) { // 첫번째 단계를 처리하는 함수
++ const basePrice = product.basePrice * quantity;
++ const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
++ return { basePrice: basePrice, quantity: quantity, discount: discount };
++}
+
+function applyShipping(priceData, shippingMethod) { // 두번째 단계를 처리하는 함수
+  const shippingPerCase = (priceData.basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
+  const shippingCost = priceData.quantity * shippingPerCase;
+  const price = priceData.basePrice - priceData.discount + shippingCost;
+  return price;
+}
+```
+##### STEP 7
+- 필자는 최종 결과를 담은 상수들(`price`)도 깔끔하게 정리해야 속이 시원하다.
+``` diff
+// Root scope
+function priceOrder(product, quantity, shippingMethod) {
+  const priceData = calculatePricingData(product, quantity);
+- const price = applyShipping(priceData, shippingMethod);
+- return price;
++ return applyShipping(priceData, shippingMethod);
+}
+
+function calculatePricingData(product, quantity) { // 첫번째 단계를 처리하는 함수
+  const basePrice = product.basePrice * quantity;
+  const discount = Math.max(quantity - product.discountThreshold, 0) * product.basePrice * product.discountRate;
+  return { basePrice: basePrice, quantity: quantity, discount: discount };
+}
+
+function applyShipping(priceData, shippingMethod) { // 두번째 단계를 처리하는 함수
+  const shippingPerCase = (priceData.basePrice > shippingMethod.discountThreshold) ? shippingMethod.discountedFee : shippingMethod.feePerCase;
+  const shippingCost = priceData.quantity * shippingPerCase;
+- const price = priceData.basePrice - priceData.discount + shippingCost;
+- return price;
++ return priceData.basePrice - priceData.discount + shippingCost;
+}
+```
+#### 예시: 명령줄 프로그램 쪼개기(Java)
+JSON 파일에 담긴 주문의 개수를 세는 자바 프로그램을 살펴보자
+``` java
+public statis void main(String[] args) {
+  try {
+    if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+    String filename = args[args.length - 1];
+    File input = Paths.get(filename).toFile();
+    ObjectMapper mapper = new ObjectMapper();
+    Order[] orders = mapper.readValue(input, Order[].class);
+    if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+      System.out.println(Stream.of(orders).filter(o -> "ready".equals(o.status)).count());
+    else
+      System.out.println(orders.length);
+  } catch (Exception e) {
+    System.err.println(e);
+    System.exit(1);
+  }
+}
+```
+- 이 프로그램은 명령줄에서 실행할 때 주문이 담긴 파일 이름을 인수로 받는다. 이때 옵션인 `-r` 플래그를 지정하면 "ready" 상태인 주문만 센다.
+- 이 코드는 두 가지 일을 한다.
+  1. 주문 목록을 읽어서 개수를 셈
+  2. 명령줄 인수를 담은 배열을 읽어서 프로그램의 동작을 결정한다.
+- 따라서 단계 쪼개기 리팩터링의 대상으로 적합하다.
+- 첫 번째 단계는 명령줄 인수의 구문을 분석해서 의미를 추출한다.
+- 두 번째 단계는 이렇게 추출된 정보를 이용하여 데이터를 적절히 가공한다.
+- 이렇게 분리해두면, 프로글매에서 지정할 수 있는 옵션이나 스위치가 늘어나더라도 코드를 수정하기 쉽다.
+##### STEP 1
+- 단계 쪼개기와 상관없는 작업부터 할 것이다.
+- 테스트를 위해서 일반적인 JUnit 호출로 자바 프로세스 하나에서 테스트할 수 있는 상태로 만들어야 한다.
+- 그러기 위해서 먼저 핵심 작업을 수행하는 코드 전부를 함수로 추출한다.
+``` diff
+public statis void main(String[] args) {
+  try {
+-   if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+-   String filename = args[args.length - 1];
+-   File input = Paths.get(filename).toFile();
+-   ObjectMapper mapper = new ObjectMapper();
+-   Order[] orders = mapper.readValue(input, Order[].class);
+-   if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+-     System.out.println(Stream.of(orders).filter(o -> "ready".equals(o.status)).count());
+-   else
+-     System.out.println(orders.length);
++   run(args);
+  } catch (Exception e) {
+    System.err.println(e);
+    System.exit(1);
+  }
+}
+
++static void run(String[] args) throws IOException {
++ if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
++ String filename = args[args.length - 1];
++ File input = Paths.get(filename).toFile();
++ ObjectMapper mapper = new ObjectMapper();
++ Order[] orders = mapper.readValue(input, Order[].class);
++ if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
++   System.out.println(Stream.of(orders).filter(o -> "ready".equals(o.status)).count());
++ else
++   System.out.println(orders.length);
++}
+```
+##### STEP 2
+- `run()` 메서드를 자바 프로세스 안에서 호출할 수 있지만, 결과를 받아보려면 표준 출력으로 보내는 방식을 수정해야 한다. 이 문제는 `System.out`을 호출하는 문장을 호출한 곳으로 옮겨[8.4]() 해결한다.
+``` diff
+public statis void main(String[] args) {
+  try {
+-   run(args);
++   System.out.println(run(args));
+  } catch (Exception e) {
+    System.err.println(e);
+    System.exit(1);
+  }
+}
+
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  String filename = args[args.length - 1];
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+-   System.out.println(Stream.of(orders).filter(o -> "ready".equals(o.status)).count());
++   return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+-   System.out.println();
++   return orders.length;
+}
+```
+- 이렇게 하면 기존 동작을 망치지 않으면서 `run()` 메서드를 검사하는 JUnit 테스트를 작성할 수 있다.
+- 테스트가 느리거나 불편하면 리팩터링 속도가 느려지고 오류가 생길 가능성도 커진다. 따라서 먼저 테스트를 쉽게 수행할 수 있도록 수정한 다음에 리팩터링하는 게 좋다.
+- 이번 예에서는 명령줄 호출과 표준 출력에 쓰는 느리고 불편한 작업과 자주 테스트해야 할 복잡한 동작을 분리함으로써 테스트를 더 쉽게 수행하게 만들었다. 이 원칙을 흔히 [험블 객체 패턴(Humble Object Pattern)](https://martinfowler.com/bliki/HumbleObject.html)이라 한다.
+
+##### STEP 3
+- 이제 단계를 쪼갤 준비가 끝났다. (1)가장 먼저 할 일은 두 번째 단계에 해당하는 코드를 독립된 메서드로 추출하는 것이다.
+``` diff
+public statis void main(String[] args) {
+  try {
+    System.out.println(run(args));
+  } catch (Exception e) {
+    System.err.println(e);
+    System.exit(1);
+  }
+}
+
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  String filename = args[args.length - 1];
+- File input = Paths.get(filename).toFile();
+- ObjectMapper mapper = new ObjectMapper();
+- Order[] orders = mapper.readValue(input, Order[].class);
+- if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+-   return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+- else
+-   return orders.length;
++ return countOrders(args, filename);
+}
+
++private static long countOrders(String[] args, String filename) throws IOException {
++ File input = Paths.get(filename).toFile();
++ ObjectMapper mapper = new ObjectMapper();
++ Order[] orders = mapper.readValue(input, Order[].class);
++ if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
++   return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
++ else
++   return orders.length;
++}
+```
+##### STEP 4
+- (3) 다음으로 중간 데이터 구조를 추가한다. 레코드는 단순한 게 좋은데, 자바이므로 클래스로 구현한다.
+``` diff
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
++ CommandLine commandLine = new CommandLine();
+  String filename = args[args.length - 1];
+- return countOrders(args, filename);
++ return countOrders(commandLine, args, filename);
+}
+
+-private static long countOrders(String[] args, String filename) throws IOException {
++private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
++private static class CommandLine {}
+```
+
+##### STEP 5
+- (5)이제 두번째 단계 메서드인 `countOrders()`로 전달되는 다른 인수들을 살펴본다. `args`부터 살펴보자. `args`는 첫 번째 단계에서 사용하는데, 이를 두번째 단계에까지 노출하는 건 적절치 않다. 지금 단계를 쪼개는 목적이 `args`를 사용하는 부분을 첫 번째 단계로 분리하는 것이기 때문이다.
+- `args`를 처리하기 위해 가장 먼저 할 일은 이 값을 사용하는 부분을 찾아서 그 결과를 추출하는 것이다. 여기서는 단 한 번, 개수를 세는 코드가 "ready" 상태인 주문만 세는지 확인하는 데 사용하므로 이 조건식을 [6.3 변수 추출하기]() 한다.
+``` diff
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine();
+  String filename = args[args.length - 1];
+  return countOrders(commandLine, args, filename);
+}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
++ boolean onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));
+- if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
++ if (onlyCountReady)
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+private static class CommandLine {}
+```
+##### STEP 6
+- 그런 다음 이 값을 중간 데이터 구조로 옮긴다.
+``` diff
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine();
+  String filename = args[args.length - 1];
+  return countOrders(commandLine, args, filename);
+}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+- boolean onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));
++ commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));
+- if (onlyCountReady)
++ if (commandLine.onlyCountReady)
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+-private static class CommandLine {}
++private static class CommandLine {
++ boolean onlyCountReady;
++}
+```
+> 여기서는 `CommandLine`에 public 필드로 두는 방식을 택했다. 평소에는 꺼리는 방식이지만 이 예에서는 사용되는 범위가 좁기 때문에 문제가 없다.
+##### STEP 7
+- 다음으로 `onlyCountReady`에 값을 설정하는 문장을 호출한 곳으로 옮긴다.[8.4]()
+``` diff
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine();
+  String filename = args[args.length - 1];
++ commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));  
+  return countOrders(commandLine, args, filename);
+}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+- commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));
+  if (commandLine.onlyCountReady)
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+private static class CommandLine {
+  boolean onlyCountReady;
+}
+```
+##### STEP 8
+- 이어서 filename 매개변수를 중간 데이터 구조인 CommandLine 객체로 옮긴다.
+``` diff
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine();
+- String filename = args[args.length - 1];
++ commandLine.filename = args[args.length - 1];
+  commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));  
+- return countOrders(commandLine, args, filename);
++ return countOrders(commandLine);
+}
+
+-private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
++private static long countOrders(CommandLine commandLine) throws IOException {  
+- File input = Paths.get(filename).toFile();
++ File input = Paths.get(commandLine.filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (commandLine.onlyCountReady)
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+private static class CommandLine {
+  boolean onlyCountReady;
++ String filename;
+}
+```
+##### STEP 9
+- 매개변수 처리가 다 끝났다. (9)이제 첫 번째 단계의 코드를 메서드로 추출한다.
+``` diff
+static long run(String[] args) throws IOException {
+- if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+- CommandLine commandLine = new CommandLine();
+- commandLine.filename = args[args.length - 1];
+- commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));  
++ CommandLine commandLine = parseCommandLine(args);
+  return countOrders(commandLine);
+}
+
++private static CommandLine parseCommandLine(String[] args) {
++ if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
++ CommandLine commandLine = new CommandLine();
++ commandLine.filename = args[args.length - 1];
++ commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));  
++ return commandLine;
++}
+
+private static long countOrders(CommandLine commandLine) throws IOException {  
+  File input = Paths.get(commandLine.filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (commandLine.onlyCountReady)
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+private static class CommandLine {
+  boolean onlyCountReady;
+  String filename;
+}
+```
+##### STEP 10
+- 단계 쪼개기 리팩터링 핵심은 이 정도로 끝났다. 그런데 이름 바꾸기와 인라인하기로 조금 더 정리할 수 있다.
+``` diff
+static long run(String[] args) throws IOException {
+- CommandLine commandLine = parseCommandLine(args);
+- return countOrders(commandLine);
++ return countOrders(parseCommandLine(args));
+}
+
+private static CommandLine parseCommandLine(String[] args) {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+- CommandLine commandLine = new CommandLine();
++ CommandLine result = new CommandLine();
+- commandLine.filename = args[args.length - 1];
++ result.filename = args[args.length - 1];
+- commandLine.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));  
++ result.onlyCountReady = Stream.of(args).anyMatch(arg -> "-r".equals(args));  
+- return commandLine;
++ return result;
+}
+
+private static long countOrders(CommandLine commandLine, String[] args) throws IOException {  
+  File input = Paths.get(commandLine.filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (commandLine.onlyCountReady)
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+private static class CommandLine {
+  boolean onlyCountReady;
+  String filename;
+}
+```
+- 이제 두 단계가 명확하게 분리됐다. `parseCommnadLine()`은 오로지 명령줄 관련 작업만 처리하고, `countOrders()`는 실제로 처리할 작업만 수행한다. 이제 두 메서드를 독립적으로 테스트하기 쉬워졌다. 여기서 로직이 더 복잡해진다면, 아마도 `parseCommandLine()`을 더 전문화된 라이브러리로 대체할 것이다.
+
+#### 예시: 첫 번째 단계에 변환기 사용하기(Java)
+앞의 명령줄 예시에서는 첫 번째 단계에서 간단한 데이터 구조를 만들어서 두 번째 단계로 전달했다. 이렇게 하지 않고 명령줄 인수를 담은 문자열 배열을 두 번째 단계에 적합한 인터페이스로 바꿔주는 변환기(transformer) 객체를 만들어도 된다.
+이 방식을 설명하기 위해 앞 예시에서 두 번째 단계에 데이터를 전달할 `CommandLine` 객체를 생성하는 부분으로 돌아가보자.
+``` diff
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine();
+  String filename = args[args.length - 1];
+return countOrders(commandLine, args, filename);
+}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+private static class CommandLine {}
+```
+##### STEP 1
+- 앞 예시에서는 동작을 포함할 수 있는 객체 대신 레코드 구조를 만들었기 때문에, 내부 클래스를 만들고 나중에 public 데이터 멤버로 채웠다. 하지만 다음과 같이 동작까지 포함하는 최상위 클래스로 빼내는 방법도 있다.
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine();
+  String filename = args[args.length - 1];
+  return countOrders(commandLine, args, filename);
+}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+// CommandLine 클래스
+-private static class CommandLine {}
++public class CommandLine {
++ String[] args;
++ public CommandLine(String[] args) {
++   this.args = args;
++ }
++}
+```
+- `CommandLine` 클래스는 생성자에서 인수 배열을 받아서 첫 단계 로직이 할 일을 수행한다. 즉, 입력받은 데이터를 두 번째 단계에 맞게 변환하는 메서드들을 제공할 것이다.
+##### STEP 2
+- 처리 과정을 확실히 이해하기 위해 `countOrders()`의 인수를 뒤에서부터 살펴보자. 먼저 `filename`이다. 이 인수에는 [7.4 임시 변수를 질의 함수로 바꾸기]()를 적용한다.
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+- CommandLine commandLine = new CommandLine();
++ CommandLine commandLine = new CommandLine(args); // 책에서 누락된 부분
+- String filename = args[args.length - 1];
+- return countOrders(commandLine, args, filename);
++ return countOrders(commandLine, args, filename(args));
+}
+
++private static String filename(String[] args) {
++ return args[args.length - 1];
++}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+// CommandLine 클래스
+public class CommandLine {
+  String[] args;
+  public CommandLine(String[] args) {
+    this.args = args;
+  }
+}
+```
+##### STEP 3
+- 바로 이어서 이 질의 메서드를 `CommnadLine` 클래스로 옮긴다[8.1 함수 옮기기]()
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine(args);
+- return countOrders(commandLine, args, filename(args));
++ return countOrders(commandLine, args, commandLine.filename());
+}
+
+private static String filename(String[] args) {
+  return args[args.length - 1];
+}
+
+private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
+  File input = Paths.get(filename).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+// CommandLine 클래스
+public class CommandLine {
+  String[] args;
+  public CommandLine(String[] args) {
+    this.args = args;
+  }
++ String filename() {
++   return args[args.length - 1];
++ }
+}
+```
+##### STEP 4
+- 이제 [6.5 함수 선언 바꾸기(Change Function Declaration)]()로 `countOrders()`가 새로 만든 메서드를 사용하도록 고친다.
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine(args);
+- return countOrders(commandLine, args, commandLine.filename());
++ return countOrders(commandLine, args);
+}
+
+private static String filename(String[] args) {
+  return args[args.length - 1];
+}
+
+-private static long countOrders(CommandLine commandLine, String[] args, String filename) throws IOException {
++private static long countOrders(CommandLine commandLine, String[] args) throws IOException {  
+- File input = Paths.get(filename).toFile();
++ File input = Paths.get(commandLine.filename()).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+// CommandLine 클래스
+public class CommandLine {
+  String[] args;
+  public CommandLine(String[] args) {
+    this.args = args;
+  }
+  String filename() {
+    return args[args.length - 1];
+  }
+}
+```
+##### STEP 5
+- 아직 `args`는 제거하면 안된다. 조건문에서 사용하고 있기 때문이다. `args`를 삭제하려면 먼제 이 조건식부터 추출해야 한다.
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine(args);
+  return countOrders(commandLine, args);
+}
+
+private static String filename(String[] args) {
+  return args[args.length - 1];
+}
+
+private static long countOrders(CommandLine commandLine, String[] args) throws IOException {  
+  File input = Paths.get(commandLine.filename()).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+- if (Stream.of(args).anyMatch(arg -> "-r".equals(arg)))
++ if (onlyCountReady(args))
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
++private static boolean onlyCountReady(String[] args) {
++ return Stream.of(args).anyMatch(arg -> "-r".equals(arg));
++}
+
+// CommandLine 클래스
+public class CommandLine {
+  String[] args;
+  public CommandLine(String[] args) {
+    this.args = args;
+  }
+  String filename() {
+    return args[args.length - 1];
+  }
+}
+```
+##### STEP 6
+- 그런 다음 이 메서드를 `CommandLine` 클래스로 옮기고 `args` 매개변수를 삭제한다.
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+  if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine(args);
+- return countOrders(commandLine, args);
++ return countOrders(commandLine);
+}
+
+private static String filename(String[] args) {
+  return args[args.length - 1];
+}
+
+-private static long countOrders(CommandLine commandLine, String[] args) throws IOException {  
++private static long countOrders(CommandLine commandLine) throws IOException {  
+  File input = Paths.get(commandLine.filename()).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+- if (onlyCountReady(args))
++ if (commandLine.onlyCountReady())
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+-private static boolean onlyCountReady(String[] args) {
+- return Stream.of(args).anyMatch(arg -> "-r".equals(arg));
+-}
+
+// CommandLine 클래스
+public class CommandLine {
+  String[] args;
+  public CommandLine(String[] args) {
+    this.args = args;
+  }
+  String filename() {
+    return args[args.length - 1];
+  }
++ boolean onlyCountReady() {
++   return Stream.of(this.args).anyMatch(arg -> "-r".equals(arg));
++ }
+}
+```
+
+##### STEP 7
+- 지금까지는 변환 로직을 새 클래스로 옮기는 방식으로 리팩터링했다. 추가로, 명령줄 인수가 존재하는지 검사하는 부분도 옮겨준다([8.3 문장을 함수로 옮기기]())
+``` diff
+// App 클래스
+static long run(String[] args) throws IOException {
+- if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  CommandLine commandLine = new CommandLine(args);
+  return countOrders(commandLine);
+}
+
+private static String filename(String[] args) {
+  return args[args.length - 1];
+}
+
+private static long countOrders(CommandLine commandLine) throws IOException {  
+  File input = Paths.get(commandLine.filename()).toFile();
+  ObjectMapper mapper = new ObjectMapper();
+  Order[] orders = mapper.readValue(input, Order[].class);
+  if (commandLine.onlyCountReady())
+    return Stream.of(orders).filter(o -> "ready".equals(o.status)).count();
+  else
+    return orders.length;
+}
+
+// CommandLine 클래스
+public class CommandLine {
+  String[] args;
+  public CommandLine(String[] args) {
+    this.args = args;
++   if (args.length == 0) throw new RuntimeException("파일명을 입력하세요");
+  }
+  String filename() {
+    return args[args.length - 1];
+  }
+  boolean onlyCountReady() {
+    return Stream.of(this.args).anyMatch(arg -> "-r".equals(arg));
+  }
+}
+```
