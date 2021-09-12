@@ -24,6 +24,7 @@
 
 ## Chapter 08 기능이동
 - [8.1 함수 옮기기(Move Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-1.md)
+- [8.2 필드 옮기기(Move Field)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-2.md)
 ## Chapter 09 데이터 조직화
 - [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)
 - [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
