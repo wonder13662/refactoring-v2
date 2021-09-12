@@ -21,3 +21,8 @@
 - [7.7 위임 숨기기(Hide Delegate)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-7.md)
 - [7.8 중개자 제거하기(Remove Middle Man)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-8.md)
 - [7.9 알고리즘 교체하기(Subtitute Algorithm)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-9.md)
+
+## Chapter 08 기능이동
+- [8.1 함수 옮기기(Move Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-1.md)
+## Chapter 09 데이터 조직화
+- [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)
