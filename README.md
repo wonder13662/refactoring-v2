@@ -25,6 +25,14 @@
 ## Chapter 08 기능이동
 - [8.1 함수 옮기기(Move Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-1.md)
 - [8.2 필드 옮기기(Move Field)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-2.md)
+- [8.3 문장을 함수로 옮기기(Move Statements into Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-3.md)
+- [8.4 문장을 호출한 곳으로 옮기기(Move Statements to Caller)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-4.md)
+- [8.5 인라인 코드를 함수 호출로 바꾸기(Replace Inline Code with Function Call)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-5.md)
+- [8.6 문장 슬라이드하기(Slide Statements)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-6.md)
+- [8.7 반복문 쪼개기(Split loop)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-7.md)
+- [8.8 반복문을 파이프라인으로 바꾸기(Replace Loop with Pipeline)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-8.md)
+- [8.9 죽은 코드 제거하기(Remove Dead Code)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-9.md)
+
 ## Chapter 09 데이터 조직화
 - [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)
 - [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
