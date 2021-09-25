@@ -36,6 +36,8 @@
 ## Chapter 09 데이터 조직화
 - [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)
 - [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
+## Chapter 10 조건부 로직 간소화
+- [10.6 어서션 추가하기(Introduce Assertion)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-6.md)
 ## Chapter 11 API 리팩터링
 - [11.1 질의 함수와 변경 함수 분리하기(Separate Query from Modifier)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-1.md)
 - [11.7 세터 제거하기(Remove Setting Method)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-7.md)
