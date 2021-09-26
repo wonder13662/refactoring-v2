@@ -34,6 +34,7 @@
 - [8.9 죽은 코드 제거하기(Remove Dead Code)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-9.md)
 
 ## Chapter 09 데이터 조직화
+- [9.1 변수 쪼개기(Split Variable)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-1.md)
 - [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)
 - [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
 ## Chapter 10 조건부 로직 간소화
