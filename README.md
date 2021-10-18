@@ -41,7 +41,13 @@
 - [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
 - [9.6 매직 리터럴 바꾸기(Replace Magic Literal)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-6.md)
 ## Chapter 10 조건부 로직 간소화
+- [10.1 조건문 분해하기(Decompose Conditional)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-1.md)
+- [10.2 중복 조건식 통합하기(Consolidate Conditional Expression)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-2.md)
+- [10.3 중첩 조건문을 보호 구문으로 바꾸기(Replace Nested Conditional with Guard Clauses)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-3.md)
+- [10.4 조건부 로직을 다형성으로 바꾸기(Replace Conditional with Polymorphism)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-4.md)
+- [10.5 특이 케이스 추가하기(Introduce Special Case)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-5.md)
 - [10.6 어서션 추가하기(Introduce Assertion)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-6.md)
+- [10.7 제어 플래그를 탈출문으로 바꾸기(Replace Control Flag with Break)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-7.md)
 ## Chapter 11 API 리팩터링
 - [11.1 질의 함수와 변경 함수 분리하기(Separate Query from Modifier)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-1.md)
 - [11.7 세터 제거하기(Remove Setting Method)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-7.md)
