@@ -9,6 +9,18 @@
 - [1.8 다형성을 활용해 계산 코드 재구성하기](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-8.md)
 - [1.9 상태 점검: 다형성을 활용하여 데이터 생성하기](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-9.md)
 - [1.10 마치며](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-10.md)
+## Chapter 02 리팩터링 원칙
+- [2.1 리팩터링 정의](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-1.md)
+- [2.2 두 개의 모자](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-2.md)
+- [2.3 리팩터링하는 이유](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-3.md)
+- [2.4 언제 리팩터링해야 할까?](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-4.md)
+- [2.5 리팩터링 시 고려할 문제](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-5.md)
+- [2.6 리팩터링, 아키텍처, 애그니(YAGNI)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-6.md)
+- [2.7 리팩터링과 소프트웨어 개발 프로세스](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-7.md)
+- [2.8 리팩터링과 성능](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-8.md)
+- [2.9 리팩터링의 유래](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-9.md)
+- [2.10 리팩터링 자동화](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-10.md)
+- [2.11 더 알고 싶다면](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-11.md)
 ## Chapter 06 기본적인 리팩터링
 - [6.1 함수 추출하기(Extract function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-1.md)
 - [6.2 함수 인라인하기(Inline Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-2.md)
