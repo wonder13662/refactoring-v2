@@ -46,6 +46,14 @@
 - [3.22 데이터 클래스(Data Class)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-22.md)
 - [3.23 상속 포기(Refused Bequest)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-23.md)
 - [3.24 주석(Comments)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-24.md)
+## Chapter 04 테스트 구축하기
+- [4.1 자가 테스트 코드의 가치(The Value of Self-Testing Code)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-1.md)
+- [4.2 테스트할 샘플 코드(Sample Code to Test)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-2.md)
+- [4.3 첫 번째 테스트(A First Test)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-3.md)
+- [4.4 테스트 추가하기(Add Another Test)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-4.md)
+- [4.5 픽스처 수정하기(Modifying the Fixture)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-5.md)
+- [4.6 경계 조건 검사하기(Probing the Boundaries)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-6.md)
+- [4.7 끝나지 않은 여정(Much More Than this)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-7.md)
 ## Chapter 06 기본적인 리팩터링
 - [6.1 함수 추출하기(Extract function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-1.md)
 - [6.2 함수 인라인하기(Inline Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-2.md)
