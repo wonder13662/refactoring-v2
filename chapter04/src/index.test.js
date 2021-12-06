@@ -37,7 +37,7 @@ describe('province', function() {
     asia.demand = '';
     expect(asia.shortfall).toBe(NaN);
     expect(asia.profit).toBe(NaN);
-  })
+  });
 });
 
 describe('no producer', function() { // 생산자가 없다.
