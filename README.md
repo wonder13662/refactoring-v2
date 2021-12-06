@@ -54,6 +54,9 @@
 - [4.5 픽스처 수정하기(Modifying the Fixture)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-5.md)
 - [4.6 경계 조건 검사하기(Probing the Boundaries)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-6.md)
 - [4.7 끝나지 않은 여정(Much More Than this)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-7.md)
+## Chapter 05 리팩터링 카탈로그 보는 법
+- [5.1 리팩터링 설명 형식(Format of the Refactorings)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter05/5-1.md)
+- [5.2 리팩터링 기법 선정 기준(The Choice of Refactorings)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter05/5-2.md)
 ## Chapter 06 기본적인 리팩터링
 - [6.1 함수 추출하기(Extract function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-1.md)
 - [6.2 함수 인라인하기(Inline Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-2.md)
