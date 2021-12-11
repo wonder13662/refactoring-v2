@@ -133,3 +133,6 @@
 - [12.9 계층 합치기(Collapse Hierarchy)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12/12-9.md)
 - [12.10 서브클래스를 위임으로 바꾸기(Replace Subclass with Delegate)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12/12-10.md)
 - [12.11 슈퍼클래스를 위임으로 바꾸기(Replace Superclass with Delegate)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12/12-11.md)
+
+## 부록 - 악취 제거 기법
+- [부록 - 악취 제거 기법](https://github.com/wonder13662/refactoring-v2/blob/writing/supplement.md)
