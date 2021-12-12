@@ -4,3 +4,11 @@
 참조(`reference`)인지 값(`value`)인지 헷갈려 문제가 되는 코드도 자주 볼 수 있는데, 둘 사이를 전환할 때는 [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)와 [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)를 사용한다.
 
 > 이 외에도 원서 웹 버전에 수록된 다음 리팩터링을 더 번역해 실었다. 코드에 의미를 알기 어려운 리터럴이 보이면 [9.6 매직 리터럴 바꾸기(Replace Magic Literal)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-6.md)로 명확하게 바꿔준다.
+
+- [목차](https://github.com/wonder13662/refactoring-v2/blob/writing/README.md)
+- [9.1 변수 쪼개기(Split Variable)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-1.md)
+- [9.2 필드 이름 바꾸기(Rename Field)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-2.md)
+- [9.3 파생 변수를 질의 함수로 바꾸기(Replace Derived Variable with Query)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-3.md)
+- [9.4 참조를 값으로 바꾸기(Change Reference to Value)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-4.md)
+- [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
+- [9.6 매직 리터럴 바꾸기(Replace Magic Literal)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-6.md)

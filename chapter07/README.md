@@ -7,3 +7,14 @@
 클래스는 내부 정보뿐 아니라 클래스 사이의 연결 관계를 숨기는 데도 유용하다. 이 용도로는 [7.7 위임 숨기기(Hide Delegate)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-7.md)가 있다. 하지만 너무 많이 숨기려다 보면 인터페이스가 비대해질 수 있으니 반대 기법인 [7.8 중개자 제거하기(Remove Middle Man)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-8.md)도 필요하다.
 
 가장 큰 캡슐화 단위는 클래스와 모듈이지만 함수도 구현을 캡슐화한다. 때로는 알고리즘을 통째로 바꿔야 할 때가 있는데, [6.1 함수 추출하기(Extract function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-1.md)로 알고리즘 전체를 함수 하나에 담은 뒤 [7.9 알고리즘 교체하기(Subtitute Algorithm)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-9.md)를 적용하면 된다.
+
+- [목차](https://github.com/wonder13662/refactoring-v2/blob/writing/README.md)
+- [7.1 레코드 캡슐화하기(Encapsulate Record)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-1.md)
+- [7.2 컬렉션 캡슐화하기(Encapsulate Collection)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-2.md)
+- [7.3 기본형을 객체로 바꾸기(Replace Primitive with Object)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-3.md)
+- [7.4 임시 변수를 질의 함수로 바꾸기(Replace Temp with Query)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-4.md)
+- [7.5 클래스 추출하기(Extract Class)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-5.md)
+- [7.6 클래스 인라인하기(Inline Class)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-6.md)
+- [7.7 위임 숨기기(Hide Delegate)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-7.md)
+- [7.8 중개자 제거하기(Remove Middle Man)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-8.md)
+- [7.9 알고리즘 교체하기(Subtitute Algorithm)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-9.md)
