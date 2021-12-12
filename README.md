@@ -1,4 +1,5 @@
 ## Chapter 01 리팩터링: 첫 번째 예시
+- [1 리팩터링: 첫 번째 예시](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01)
 - [1.1 자, 시작해보자!](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-1.md)
 - [1.2 예시 프로그램을 본 소감](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-2.md)
 - [1.3 리팩터링의 첫 단계](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-3.md)
@@ -10,6 +11,7 @@
 - [1.9 상태 점검: 다형성을 활용하여 데이터 생성하기](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-9.md)
 - [1.10 마치며](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter01/1-10.md)
 ## Chapter 02 리팩터링 원칙
+- [2 리팩터링 원칙](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02)
 - [2.1 리팩터링 정의](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-1.md)
 - [2.2 두 개의 모자](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-2.md)
 - [2.3 리팩터링하는 이유](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-3.md)
@@ -22,6 +24,7 @@
 - [2.10 리팩터링 자동화](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-10.md)
 - [2.11 더 알고 싶다면](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter02/2-11.md)
 ## Chapter 03 코드에서 나는 악취
+- [3 코드에서 나는 악취](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03)
 - [3.1 기이한 이름(Mysterious Name)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-1.md)
 - [3.2 중복 코드(Duplicated Code)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-2.md)
 - [3.3 긴 함수(Long Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-3.md)
@@ -47,6 +50,7 @@
 - [3.23 상속 포기(Refused Bequest)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-23.md)
 - [3.24 주석(Comments)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter03/3-24.md)
 ## Chapter 04 테스트 구축하기
+- [4 테스트 구축하기](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04)
 - [4.1 자가 테스트 코드의 가치(The Value of Self-Testing Code)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-1.md)
 - [4.2 테스트할 샘플 코드(Sample Code to Test)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-2.md)
 - [4.3 첫 번째 테스트(A First Test)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-3.md)
@@ -55,9 +59,11 @@
 - [4.6 경계 조건 검사하기(Probing the Boundaries)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-6.md)
 - [4.7 끝나지 않은 여정(Much More Than this)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter04/4-7.md)
 ## Chapter 05 리팩터링 카탈로그 보는 법
+- [5 리팩터링 카탈로그 보는 법](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter05)
 - [5.1 리팩터링 설명 형식(Format of the Refactorings)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter05/5-1.md)
 - [5.2 리팩터링 기법 선정 기준(The Choice of Refactorings)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter05/5-2.md)
 ## Chapter 06 기본적인 리팩터링
+- [6 기본적인 리팩터링](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06)
 - [6.1 함수 추출하기(Extract function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-1.md)
 - [6.2 함수 인라인하기(Inline Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-2.md)
 - [6.3 변수 추출하기(Extract Variable)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-3.md)
@@ -71,6 +77,7 @@
 - [6.11 단계 쪼개기(Split Phase)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter06/6-11.md)
 
 ## Chapter 07 캡슐화
+- [7 캡슐화](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07)
 - [7.1 레코드 캡슐화하기(Encapsulate Record)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-1.md)
 - [7.2 컬렉션 캡슐화하기(Encapsulate Collection)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-2.md)
 - [7.3 기본형을 객체로 바꾸기(Replace Primitive with Object)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-3.md)
@@ -82,6 +89,7 @@
 - [7.9 알고리즘 교체하기(Subtitute Algorithm)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter07/7-9.md)
 
 ## Chapter 08 기능이동
+- [8 기능이동](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08)
 - [8.1 함수 옮기기(Move Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-1.md)
 - [8.2 필드 옮기기(Move Field)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-2.md)
 - [8.3 문장을 함수로 옮기기(Move Statements into Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-3.md)
@@ -93,6 +101,7 @@
 - [8.9 죽은 코드 제거하기(Remove Dead Code)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter08/8-9.md)
 
 ## Chapter 09 데이터 조직화
+- [9 데이터 조직화](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09)
 - [9.1 변수 쪼개기(Split Variable)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-1.md)
 - [9.2 필드 이름 바꾸기(Rename Field)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-2.md)
 - [9.3 파생 변수를 질의 함수로 바꾸기(Replace Derived Variable with Query)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-3.md)
@@ -100,6 +109,7 @@
 - [9.5 값을 참조로 바꾸기(Change Value to Reference)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-5.md)
 - [9.6 매직 리터럴 바꾸기(Replace Magic Literal)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter09/9-6.md)
 ## Chapter 10 조건부 로직 간소화
+- [10 조건부 로직 간소화](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10)
 - [10.1 조건문 분해하기(Decompose Conditional)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-1.md)
 - [10.2 중복 조건식 통합하기(Consolidate Conditional Expression)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-2.md)
 - [10.3 중첩 조건문을 보호 구문으로 바꾸기(Replace Nested Conditional with Guard Clauses)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-3.md)
@@ -108,6 +118,7 @@
 - [10.6 어서션 추가하기(Introduce Assertion)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-6.md)
 - [10.7 제어 플래그를 탈출문으로 바꾸기(Replace Control Flag with Break)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter10/10-7.md)
 ## Chapter 11 API 리팩터링
+- [11 API 리팩터링](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11)
 - [11.1 질의 함수와 변경 함수 분리하기(Separate Query from Modifier)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-1.md)
 - [11.2 함수 매개변수화하기(Parameterize Function)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-2.md)
 - [11.3 플래그 인수 제거하기(Remove Flag Argument)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-3.md)
@@ -122,6 +133,7 @@
 - [11.12 오류 코드를 예외로 바꾸기(Replace Error Code with Exception)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-12.md)
 - [11.13 예외를 사전확인으로 바꾸기(Replace Exception with Precheck)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter11/11-13.md)
 ## Chapter 12 상속 다루기
+- [12 상속 다루기](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12)
 - [12.1 메서드 올리기(Pull Up Method)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12/12-1.md)
 - [12.2 필드 올리기(Pull Up Field)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12/12-2.md)
 - [12.3 생성자 본문 올리기(Pull Up Constructor Body)](https://github.com/wonder13662/refactoring-v2/blob/writing/chapter12/12-3.md)
